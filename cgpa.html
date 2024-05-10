@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGPA Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            margin-bottom: 15px;
+        }
+
+        .input-container label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            padding: 8px;
+            width: calc(100% - 16px);
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #courses {
+            margin-top: 20px;
+        }
+
+        #courses p {
+            margin: 5px 0;
+        }
+
+        #cgpa {
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #cgpaValue {
+            font-size: 24px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CGPA Calculator</h1>
+        <div id="courseInputs"></div>
+        <button onclick="addCourse()">Add Course</button>
+        <button onclick="calculateCGPA()">Calculate CGPA</button>
+        <div id="courses"></div>
+        <div id="cgpa">CGPA: <span id="cgpaValue">-</span></div>
+    </div>
+
+    <script>
+        let courses = [];
+
+        function addCourse() {
+            const courseInputs = document.getElementById("courseInputs");
+            const courseDiv = document.createElement("div");
+            courseDiv.classList.add("input-container");
+            courseDiv.innerHTML = `
+                <label for="credit">Credit Hours:</label>
+                <input type="number" class="credit" min="1" step="1" placeholder="Enter credit hours">
+                <label for="grade">Grade:</label>
+                <input type="text" class="grade" placeholder="Enter grade (A, B, C, D, F)">
+            `;
+            courseInputs.appendChild(courseDiv);
+        }
+
+        function calculateCGPA() {
+            courses = [];
+            const courseInputs = document.querySelectorAll(".input-container");
+            let hasArrears = false;
+
+            courseInputs.forEach(courseInput => {
+                const credit = parseFloat(courseInput.querySelector(".credit").value);
+                const grade = courseInput.querySelector(".grade").value.toUpperCase();
+                if (!isNaN(credit) && credit > 0 && grade && isValidGrade(grade)) {
+                    if (grade === 'U') {
+                        hasArrears = true;
+                    }
+                    courses.push({ credit, grade });
+                }
+            });
+
+            if (hasArrears) {
+                document.getElementById("cgpaValue").textContent = "-";
+            } else {
+                displayCourses();
+                calculateAndUpdateCGPA();
+            }
+        }
+
+        function isValidGrade(grade) {
+            return ['A', 'B', 'C', 'D', 'F', 'U'].includes(grade);
+        }
+
+        function displayCourses() {
+            const coursesDiv = document.getElementById("courses");
+            coursesDiv.innerHTML = "";
+            courses.forEach(course => {
+                const p = document.createElement("p");
+                p.textContent = `Credit Hours: ${course.credit}, Grade: ${course.grade}`;
+                coursesDiv.appendChild(p);
+            });
+        }
+
+        function calculateAndUpdateCGPA() {
+            let totalGradePoints = 0;
+            let totalCredits = 0;
+
+            courses.forEach(course => {
+                if (course.grade !== 'U') {
+                    const gradePoints = getGradePoints(course.grade);
+                    totalGradePoints += gradePoints * course.credit;
+                    totalCredits += course.credit;
+                }
+            });
+
+            const cgpa = totalCredits === 0 ? NaN : totalGradePoints / totalCredits;
+            document.getElementById("cgpaValue").textContent = isNaN(cgpa) ? "-" : cgpa.toFixed(2);
+        }
+
+        function getGradePoints(grade) {
+            switch (grade) {
+                case 'A':
+                    return 4.0;
+                case 'B':
+                    return 3.0;
+                case 'C':
+                    return 2.0;
+                case 'D':
+                    return 1.0;
+                case 'F':
+                    return 0.0;
+                default:
+                    return 0.0;
+            }
+        }
+    </script>
+</body>
+</html>
